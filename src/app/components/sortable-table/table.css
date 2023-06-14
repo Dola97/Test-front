@@ -1,0 +1,85 @@
+/* Table Styles */
+.table-container {
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.table tbody tr:nth-child(even) {
+  background-color: #f2f2f2;
+}
+.table th,
+.table td {
+  padding: 8px;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+}
+
+.table th {
+  background-color: #f5f5f5;
+}
+
+/* Sorting Styles */
+.sortable-header {
+  cursor: pointer;
+}
+
+.sort-icon {
+  display: inline-block;
+  margin-left: 4px;
+}
+
+.sort-icon.asc::after {
+  content: "▲";
+}
+
+.sort-icon.desc::after {
+  content: "▼";
+}
+
+/* Responsive Styles */
+@media (max-width: 768px) {
+  .table {
+    display: block;
+    overflow-x: auto;
+  }
+
+  .table thead,
+  .table tbody,
+  .table tr,
+  .table th,
+  .table td {
+    display: block;
+  }
+
+  .table thead tr {
+    position: absolute;
+    top: -9999px;
+    left: -9999px;
+  }
+
+  .table tbody tr {
+    border-bottom: 1px solid #ddd;
+    margin-bottom: 10px;
+  }
+
+  .table td {
+    border-bottom: none;
+    position: relative;
+    padding-left: 50%;
+  }
+
+  .table td:before {
+    position: absolute;
+    top: 6px;
+    left: 6px;
+    width: 45%;
+    padding-right: 10px;
+    white-space: nowrap;
+    content: attr(data-label);
+    font-weight: bold;
+  }
+}
