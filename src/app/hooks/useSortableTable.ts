@@ -1,50 +1,56 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { api } from "../api/api";
 
-type SortDirection = "asc" | "desc";
+type Column = {
+  name: string;
+  label: string;
+  sortable: boolean;
+};
+
+type SortDirection = "asc" | "desc" | "";
 
 type TableData = {
   [key: string]: any;
 };
 
-type SortableTableHook = {
+type UseSortableTableProps = {
+  url: string;
+};
+
+type UseSortableTableResult = {
   data: TableData[];
   searchTerm: string;
   sortedColumn: string;
   sortDirection: SortDirection;
   handleSort: (columnName: string) => void;
   handleSearch: (event: React.ChangeEvent<HTMLInputElement>) => void;
-  setData: (data: TableData[]) => void;
+  columns: Column[];
+  error: boolean;
 };
 
-const useSortableTable = (
-  initialData: TableData[],
-  initialUrl: string,
-  initialSearchTerm = "",
-  initialSortedColumn = "",
-  initialSortDirection: SortDirection = "asc"
-): SortableTableHook => {
-  const [data, setData] = useState<TableData[]>(initialData);
-  const [searchTerm, setSearchTerm] = useState<string>(initialSearchTerm);
-  const [sortedColumn, setSortedColumn] = useState<string>(initialSortedColumn);
-  const [sortDirection, setSortDirection] =
-    useState<SortDirection>(initialSortDirection);
+export const useSortableTable = ({
+  url,
+}: UseSortableTableProps): UseSortableTableResult => {
+  const [data, setData] = useState<TableData[]>([]);
+  const [searchTerm, setSearchTerm] = useState<string>("");
+  const [sortedColumn, setSortedColumn] = useState<string>("");
+  const [sortDirection, setSortDirection] = useState<SortDirection>("");
+  const [error, setError] = useState<boolean>(false);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await api.get(initialUrl);
-        console.log("res", response.data.data);
+        const response = await api.get(url);
         setData(response.data.data);
       } catch (error) {
-        console.log("Error fetching data:", error);
+        setError(true);
       }
     };
 
     fetchData();
-  }, [initialUrl]);
+  }, [url]);
 
-  const handleSort = (columnName: string): void => {
+  const handleSort = (columnName: string) => {
     if (columnName === sortedColumn) {
       setSortDirection((prevDirection) =>
         prevDirection === "asc" ? "desc" : "asc"
@@ -55,38 +61,42 @@ const useSortableTable = (
     }
   };
 
-  const handleSearch = (event: React.ChangeEvent<HTMLInputElement>): void => {
+  const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(event.target.value);
   };
 
-  useEffect(() => {
-    const filteredData: TableData[] = initialData?.filter((item) =>
-      item.name?.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+  const filteredData = data.filter((item) =>
+    item.attributes.name?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
-    const sortedData: TableData[] = filteredData?.sort((a, b) => {
-      const compareA = a[sortedColumn] || "";
-      const compareB = b[sortedColumn] || "";
+  const sortedData = filteredData.sort((a, b) => {
+    const compareA = a.attributes[sortedColumn] || ""; // Set default value for undefined or null
+    const compareB = b.attributes[sortedColumn] || "";
 
-      if (sortDirection === "asc") {
-        return compareA.localeCompare(compareB);
-      } else {
-        return compareB.localeCompare(compareA);
-      }
-    });
+    if (sortDirection === "asc") {
+      return compareA.localeCompare(compareB);
+    } else {
+      return compareB.localeCompare(compareA);
+    }
+  });
 
-    setData(sortedData);
-  }, [initialData, searchTerm, sortedColumn, sortDirection]);
+  const columns: Column[] =
+    data && data.length > 0 && data[0]?.attributes
+      ? Object.keys(data[0].attributes).map((key) => ({
+          name: key,
+          label: key,
+          sortable: true,
+        }))
+      : [];
 
   return {
-    data,
+    data: sortedData,
     searchTerm,
     sortedColumn,
     sortDirection,
     handleSort,
     handleSearch,
-    setData,
+    columns,
+    error,
   };
 };
-
-export default useSortableTable;

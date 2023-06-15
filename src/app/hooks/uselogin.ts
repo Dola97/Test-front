@@ -3,6 +3,7 @@ import Cookies from "js-cookie";
 import { AxiosResponse } from "axios";
 import { api } from "../api/api";
 import { TOKEN_NAME, USER } from "../constants";
+import { toast } from "react-toastify";
 
 type LoginResponse = {
   jwt: string;
@@ -53,20 +54,21 @@ export const useLogin = () => {
 
       if (response.status === 200) {
         const { jwt, user } = response.data;
-        console.log("response.data", jwt, user);
         // Store token in cookie
         Cookies.set(TOKEN_NAME, jwt, { expires: 1 / 48 });
-        localStorage.setItem(USER, JSON.stringify(user));
+        Cookies.set(USER, JSON.stringify(user), { expires: 1 / 48 });
         setLoading(false);
         return true;
       } else {
-        console.log("res", response);
         setLoading(false);
         return false;
       }
-    } catch (error) {
+    } catch (error: any) {
       setLoading(false);
-      console.error("Error occurred during login:", error);
+      toast.error(error?.response?.data?.error?.message, {
+        position: "top-right",
+      });
+
       return false;
     }
   };

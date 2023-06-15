@@ -2,6 +2,11 @@
 .table-container {
   max-width: 100%;
   overflow-x: auto;
+  border-radius: 10px;
+  border-width: 2px;
+  border-color: aquamarine;
+  border-style: solid;
+  padding: 10px;
 }
 
 .table {
@@ -82,4 +87,15 @@
     content: attr(data-label);
     font-weight: bold;
   }
+}
+.search {
+  width: 50%;
+}
+tr {
+  font-family: Poppins-Medium;
+  font-size: 14px;
+}
+th {
+  font-family: Poppins-Bold;
+  font-size: 15;
 }

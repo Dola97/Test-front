@@ -1,82 +1,26 @@
-import { DATATABLE } from "../../constants/data";
 import "./table.css";
-import useSortableTable from "../../hooks/useSortableTable";
-import { useEffect, useState } from "react";
-import { api } from "../../api/api";
-type Column = {
-  name: string;
-  label: string;
-  sortable: boolean;
-};
-
-type RowData = {
-  id: string;
-  [key: string]: any;
-};
-type SortDirection = "asc" | "desc" | "";
-
-type TableData = {
-  [key: string]: any;
-};
+import { useSortableTable } from "../../hooks/useSortableTable";
+import { withRoleBasedRendering } from "../role-based";
 
 type Props = {};
 export const SortableTable: React.FC<Props> = () => {
-  const [data, setData] = useState<TableData[]>([]);
-  const [searchTerm, setSearchTerm] = useState<string>("");
-  const [sortedColumn, setSortedColumn] = useState<string>("");
-  const [sortDirection, setSortDirection] = useState<SortDirection>("");
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await api.get("lists?pagination[limit]=100");
-        console.log("res", response.data.data);
-        setData(response.data.data);
-      } catch (error) {
-        console.log("Error fetching data:", error);
-      }
-    };
-
-    fetchData();
-  }, []);
-  const handleSort = (columnName: string) => {
-    if (columnName === sortedColumn) {
-      setSortDirection((prevDirection) =>
-        prevDirection === "asc" ? "desc" : "asc"
-      );
-    } else {
-      setSortedColumn(columnName);
-      setSortDirection("asc");
-    }
-  };
-
-  const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchTerm(event.target.value);
-  };
-
-  const filteredData = data.filter((item) =>
-    item.attributes.name?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
-  const sortedData = filteredData.sort((a, b) => {
-    const compareA = a.attributes[sortedColumn] || ""; // Set default value for undefined or null
-    const compareB = b.attributes[sortedColumn] || "";
-
-    if (sortDirection === "asc") {
-      return compareA.localeCompare(compareB);
-    } else {
-      return compareB.localeCompare(compareA);
-    }
-  });
-
-  const columns: Column[] =
-    data && data.length > 0 && data[0]?.attributes
-      ? Object.keys(data[0].attributes).map((key) => ({
-          name: key,
-          label: key,
-          sortable: true,
-        }))
-      : [];
-  console.log("sor", sortedData);
+  const {
+    searchTerm,
+    handleSearch,
+    handleSort,
+    columns,
+    sortDirection,
+    sortedColumn,
+    data,
+    error,
+  } = useSortableTable({ url: "lists?pagination[limit]=100" });
+  if (error) {
+    return (
+      <div>
+        <h1>Error Can Handeled</h1>
+      </div>
+    );
+  }
   return (
     <>
       <input
@@ -84,6 +28,7 @@ export const SortableTable: React.FC<Props> = () => {
         placeholder="Search"
         value={searchTerm}
         onChange={handleSearch}
+        className="search"
       />
       <div className="table-container">
         <table className="table">
@@ -106,15 +51,13 @@ export const SortableTable: React.FC<Props> = () => {
             </tr>
           </thead>
           <tbody>
-            {sortedData.map((item) => (
-              <tr key={item.id}>
-                <td>{item.attributes.name}</td>
-                <td>{item.attributes.description}</td>
-                <td>{item.attributes.active}</td>
-                <td>{item.attributes.createdAt}</td>
-
-                <td>{item.attributes.updatedAt}</td>
-                <td>{item.attributes.publishedAt}</td>
+            {data.map((row) => (
+              <tr key={row.id}>
+                {columns.map((column) => (
+                  <td key={column.name} data-label={column.label}>
+                    {row.attributes[column.name]}
+                  </td>
+                ))}
               </tr>
             ))}
           </tbody>
@@ -123,3 +66,6 @@ export const SortableTable: React.FC<Props> = () => {
     </>
   );
 };
+export const EditorOnlyComponent = withRoleBasedRendering(["Editor"])(
+  SortableTable
+);

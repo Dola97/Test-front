@@ -4,7 +4,6 @@ import Cookies from "js-cookie";
 import { TOKEN_NAME } from "../../constants";
 export const AuthLayout = () => {
   const token = Cookies.get(TOKEN_NAME);
-  console.log("token", token);
   const outlet = useOutlet();
   if (token) {
     return <Navigate to="/" replace />;
