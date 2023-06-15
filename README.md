@@ -1,5 +1,10 @@
 # Getting Started with Create React App
 
+### Criednitals to enter the dashboard
+
+username: adellh
+password:Test??123??
+
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
 ## Available Scripts
